@@ -147,16 +147,31 @@ function initDashboardPage() {
     const form = document.getElementById('predictionForm');
     if (!form) return;
 
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
         event.preventDefault();
+        const skillsInput = document.getElementById('skills').value;
+        const projectsInput = document.getElementById('projects').value;
+        
+        // Parse skills from comma-separated string
+        const userSkills = skillsInput
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        
+        // Parse projects count from textarea input
+        const projectsCount = projectsInput.split('\n').filter(p => p.trim()).length;
+        
         const data = {
             name: document.getElementById('name').value.trim(),
             marks: Number(document.getElementById('marks').value),
             attendance: Number(document.getElementById('attendance').value),
             backlogs: Number(document.getElementById('backlogs').value),
-            skills: document.getElementById('skills').value,
-            projects: Number(document.getElementById('projects').value),
-            consistency: Number(document.getElementById('consistency')?.value || 80)
+            skills_count: userSkills.length,
+            projects: projectsCount || Number(projectsInput) || 0,
+            user_skills: userSkills,
+            // Store original values for frontend display
+            originalSkills: skillsInput,
+            originalProjects: projectsInput
         };
 
         const button = document.getElementById('predictBtn');
@@ -167,13 +182,38 @@ function initDashboardPage() {
         loader.style.display = 'inline-block';
         buttonText.textContent = 'Analyzing...';
 
-        setTimeout(() => {
+        try {
+            // Call backend API
+            const response = await fetch('http://localhost:5000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error('Backend API error: ' + response.statusText);
+            }
+
+            const result = await response.json();
+            
+            // Save combined data to localStorage
+            const combinedData = {
+                ...data,
+                apiResult: result
+            };
+            saveState(combinedData);
+            
+            // Redirect to result page
+            window.location.href = 'result.html';
+        } catch (error) {
+            console.error('Error:', error);
             loader.style.display = 'none';
             button.disabled = false;
             buttonText.textContent = 'Analyze Profile';
-            saveState(data);
-            window.location.href = 'result.html';
-        }, 1200);
+            alert('Error connecting to backend. Make sure the server is running on http://localhost:5000');
+        }
     });
 }
 
@@ -199,11 +239,34 @@ function initResultPage() {
 }
 
 function renderResult(student) {
-    const skills = parseSkills(student.skills);
-    const missingSkills = getMissingSkills(skills);
-    const prediction = calculatePlacement(student);
-    const riskLabel = getRiskLabel(prediction.score);
-    const riskColor = getRiskColor(prediction.score);
+    // Use backend API result if available, otherwise fall back to local calculation
+    let prediction, missingSkills, explanation;
+    let riskLabel, riskColor;
+    
+    if (student.apiResult) {
+        // Use backend results
+        prediction = { score: student.apiResult.placement_probability };
+        missingSkills = student.apiResult.missing_skills;
+        explanation = student.apiResult.explanation;
+        riskLabel = student.apiResult.risk_level;
+        
+        // Map risk level to color
+        if (riskLabel === 'High Risk') {
+            riskColor = '#ef4444';
+        } else if (riskLabel === 'Medium Risk') {
+            riskColor = '#f59e0b';
+        } else {
+            riskColor = '#22c55e';
+        }
+    } else {
+        // Fallback to local calculation
+        const skills = parseSkills(student.originalSkills || student.skills);
+        missingSkills = getMissingSkills(skills);
+        prediction = calculatePlacement(student);
+        riskLabel = getRiskLabel(prediction.score);
+        riskColor = getRiskColor(prediction.score);
+        explanation = buildExplanation(student, prediction);
+    }
 
     document.getElementById('probValue').textContent = `${prediction.score}%`;
     const progressBar = document.getElementById('progressBar');
@@ -221,10 +284,9 @@ function renderResult(student) {
     if (gapContainer) {
         gapContainer.innerHTML = missingSkills.length
             ? missingSkills.map(skill => `<span class="gap-tag">${skill}</span>`).join('')
-            : '<span class="gap-tag">No major skill gaps detected</span>';
+            : '<span class="gap-tag">No skill gaps</span>';
     }
 
-    const explanation = buildExplanation(student, prediction);
     if (document.getElementById('resultExplanation')) {
         document.getElementById('resultExplanation').textContent = explanation;
     }
