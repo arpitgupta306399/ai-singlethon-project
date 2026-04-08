@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Results | AI Placement Predictor</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <nav class="nav-bar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo">AI Predictor</a>
+        <div class="nav-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="result.html" class="active">Results</a>
+          <a href="analysis.html">Analysis</a>
+          <a href="action-plan.html">Action Plan</a>
+        </div>
+      </div>
+    </nav>
+    <div class="background-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+
+    <main class="container">
+      <header class="hero">
+        <h1 class="gradient-text">Your Placement Results</h1>
+        <p>AI-powered insights based on your profile.</p>
+      </header>
+
+      <div id="loadingSection" class="loading-container">
+        <div class="glass-card loading-card">
+          <div class="loading-spinner"></div>
+          <h3>Analyzing Your Profile...</h3>
+          <p>Our AI is processing your data to provide accurate predictions.</p>
+        </div>
+      </div>
+
+      <section id="resultsSection" class="results-container hidden">
+        <div class="glass-card status-card" id="statusCard">
+          <h3>Placement Probability</h3>
+          <div class="percentage-display">
+            <span id="probValue">0%</span>
+          </div>
+          <p id="statusText">Analyzing...</p>
+          <div class="progress-track">
+            <div id="progressBar" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <a href="analysis.html" class="secondary-btn">
+            <i class="fa-solid fa-chart-bar"></i> View Analysis
+          </a>
+          <a href="action-plan.html" class="secondary-btn">
+            <i class="fa-solid fa-road"></i> Action Plan
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | AI Placement Predictor</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <nav class="nav-bar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo">AI Predictor</a>
+        <div class="nav-links">
+          <a href="dashboard.html" class="active">Dashboard</a>
+          <a href="result.html">Results</a>
+          <a href="analysis.html">Analysis</a>
+          <a href="action-plan.html">Action Plan</a>
+        </div>
+      </div>
+    </nav>
+    <div class="background-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+
+    <main class="container">
+      <header class="hero">
+        <h1 class="gradient-text">Profile Dashboard</h1>
+        <p>Enter your details to get personalized placement insights.</p>
+      </header>
+
+      <section class="glass-card form-container">
+        <form id="predictionForm">
+          <div class="form-grid">
+            <div class="input-group">
+              <label><i class="fa-solid fa-user"></i> Full Name</label>
+              <input type="text" id="name" placeholder="John Doe" required />
+            </div>
+            <div class="input-group">
+              <label
+                ><i class="fa-solid fa-graduation-cap"></i> Marks (%)</label
+              >
+              <input
+                type="number"
+                id="marks"
+                placeholder="85"
+                min="0"
+                max="100"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label
+                ><i class="fa-solid fa-calendar-check"></i> Attendance
+                (%)</label
+              >
+              <input
+                type="number"
+                id="attendance"
+                placeholder="90"
+                min="0"
+                max="100"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label
+                ><i class="fa-solid fa-circle-exclamation"></i> Active
+                Backlogs</label
+              >
+              <input
+                type="number"
+                id="backlogs"
+                placeholder="0"
+                min="0"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="input-group full-width">
+            <label
+              ><i class="fa-solid fa-code"></i> Skills (Comma Separated)</label
+            >
+            <input
+              type="text"
+              id="skills"
+              placeholder="Python, React, SQL, AWS"
+              required
+            />
+          </div>
+
+          <div class="input-group full-width">
+            <label><i class="fa-solid fa-lightbulb"></i> Key Projects</label>
+            <textarea
+              id="projects"
+              rows="2"
+              placeholder="E-commerce App, Portfolio, AI Chatbot"
+            ></textarea>
+          </div>
+
+          <button type="submit" id="predictBtn" class="primary-btn">
+            <span>Analyze Profile</span>
+            <div class="loader" id="btnLoader"></div>
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

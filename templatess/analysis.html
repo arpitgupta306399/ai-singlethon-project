@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analysis | AI Placement Predictor</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <nav class="nav-bar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo">AI Predictor</a>
+        <div class="nav-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="result.html">Results</a>
+          <a href="analysis.html" class="active">Analysis</a>
+          <a href="action-plan.html">Action Plan</a>
+        </div>
+      </div>
+    </nav>
+    <div class="background-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+
+    <main class="container">
+      <header class="hero">
+        <h1 class="gradient-text">Detailed Analysis</h1>
+        <p>Breakdown of your profile scores and skill gaps.</p>
+      </header>
+
+      <section class="glass-card breakdown-card">
+        <h3>Profile Score Breakdown</h3>
+        <div class="chart-container">
+          <div class="bar-item">
+            <span>Academic Performance</span>
+            <div class="bar"><div id="bar-marks" class="fill"></div></div>
+            <span class="score-value" id="score-marks">0%</span>
+          </div>
+          <div class="bar-item">
+            <span>Technical Skills</span>
+            <div class="bar"><div id="bar-skills" class="fill"></div></div>
+            <span class="score-value" id="score-skills">0%</span>
+          </div>
+          <div class="bar-item">
+            <span>Project Experience</span>
+            <div class="bar"><div id="bar-projects" class="fill"></div></div>
+            <span class="score-value" id="score-projects">0%</span>
+          </div>
+          <div class="bar-item">
+            <span>Risk Factor (Backlogs)</span>
+            <div class="bar"><div id="bar-backlogs" class="fill"></div></div>
+            <span class="score-value" id="score-backlogs">0%</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-card gap-analysis">
+        <h3>
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Skill Gap Analysis
+        </h3>
+        <div id="skillGaps" class="gap-tags"></div>
+      </section>
+
+      <div class="action-buttons">
+        <a href="result.html" class="secondary-btn">
+          <i class="fa-solid fa-arrow-left"></i> Back to Results
+        </a>
+        <a href="action-plan.html" class="secondary-btn">
+          <i class="fa-solid fa-road"></i> View Action Plan
+        </a>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
