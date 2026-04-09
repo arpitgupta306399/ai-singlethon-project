@@ -4,24 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Results | AI Placement Predictor</title>
-    <link rel="stylesheet" href="style.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <link rel="stylesheet" href="../static/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
     <nav class="nav-bar">
       <div class="nav-container">
-        <a href="index.html" class="nav-logo">AI Predictor</a>
+        <a href="index.html" class="nav-logo">FutureHire AI</a>
         <div class="nav-links">
+          <a href="index.html">Home</a>
           <a href="dashboard.html">Dashboard</a>
           <a href="result.html" class="active">Results</a>
           <a href="analysis.html">Analysis</a>
           <a href="action-plan.html">Action Plan</a>
+          <a href="history.html">History</a>
+          <a href="analytics.html">Analytics</a>
         </div>
       </div>
     </nav>
+
     <div class="background-blobs">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
@@ -41,30 +42,45 @@
         </div>
       </div>
 
-      <section id="resultsSection" class="results-container hidden">
+      <section id="resultsSection" class="hidden">
+
+        <div id="savedBadge" class="saved-badge hidden"></div>
+
         <div class="glass-card status-card" id="statusCard">
-          <h3>Placement Probability</h3>
+          <h3><i class="fa-solid fa-chart-line"></i> Placement Probability</h3>
           <div class="percentage-display">
             <span id="probValue">0%</span>
           </div>
-          <p id="statusText">Analyzing...</p>
+          <p id="statusText" class="risk-label">Analyzing...</p>
           <div class="progress-track">
             <div id="progressBar" class="progress-fill"></div>
           </div>
-          <p id="resultExplanation" class="result-explanation">Calculating your placement outlook using AI-driven insights.</p>
+          <p id="resultExplanation" class="result-explanation"></p>
+        </div>
+
+        <div class="glass-card gap-analysis" style="margin-top: 24px;">
+          <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Skill Gap Analysis</h3>
+          <div id="skillGaps" class="gap-tags"></div>
         </div>
 
         <div class="action-buttons">
           <a href="analysis.html" class="secondary-btn">
-            <i class="fa-solid fa-chart-bar"></i> View Analysis
+            <i class="fa-solid fa-chart-bar"></i> Detailed Analysis
           </a>
           <a href="action-plan.html" class="secondary-btn">
-            <i class="fa-solid fa-road"></i> Action Plan
+            <i class="fa-solid fa-road"></i> 6-Month Action Plan
+          </a>
+          <a href="history.html" class="secondary-btn">
+            <i class="fa-solid fa-database"></i> View History
+          </a>
+          <a href="dashboard.html" class="secondary-btn">
+            <i class="fa-solid fa-redo"></i> New Prediction
           </a>
         </div>
+
       </section>
     </main>
 
-    <script src="script.js"></script>
+    <script type="module" src="../static/script.js"></script>
   </body>
 </html>

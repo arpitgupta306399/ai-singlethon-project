@@ -3,43 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Placement Predictor | FutureReady</title>
-    <link rel="stylesheet" href="style.css" />
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <title>AI Placement Predictor | FutureHire</title>
+    <link rel="stylesheet" href="../static/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
-    <!-- Navigation Bar -->
     <nav class="nav-bar">
       <div class="nav-container">
-        <a href="index.html" class="nav-logo">AI Predictor</a>
+        <a href="index.html" class="nav-logo">FutureHire AI</a>
         <div class="nav-links">
           <a href="index.html" class="active">Home</a>
           <a href="dashboard.html">Dashboard</a>
+          <a href="result.html">Results</a>
+          <a href="analysis.html">Analysis</a>
+          <a href="action-plan.html">Action Plan</a>
+          <a href="history.html">History</a>
+          <a href="analytics.html">Analytics</a>
         </div>
       </div>
     </nav>
-    <!-- Animated background blobs for visual appeal -->
+
     <div class="background-blobs">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
     </div>
 
     <main class="container">
-      <!-- Hero section with gradient text and call-to-action -->
       <header class="hero">
         <h1 class="gradient-text">AI Placement Predictor</h1>
-        <p>Leverage neural insights to forecast your career trajectory and unlock your potential.</p>
+        <p>
+          Leverage AI-powered insights to forecast your placement probability,
+          identify skill gaps, and get a personalized 6-month action plan.
+        </p>
+        <div class="hero-stats">
+          <div class="stat-pill"><i class="fa-solid fa-brain"></i> AI-Powered</div>
+          <div class="stat-pill"><i class="fa-solid fa-chart-line"></i> Real-time Analysis</div>
+          <div class="stat-pill"><i class="fa-solid fa-road"></i> Action Plan</div>
+          <div class="stat-pill"><i class="fa-brands fa-google"></i> Firebase Backed</div>
+        </div>
         <a href="dashboard.html" class="animated-btn">
           <span>Start Prediction</span>
           <i class="fa-solid fa-arrow-right"></i>
         </a>
       </header>
+
+      <div class="features-grid">
+        <div class="feature-card glass-card">
+          <i class="fa-solid fa-percent feature-icon"></i>
+          <h3>Placement Probability</h3>
+          <p>Get an accurate percentage score based on your marks, attendance, skills, and projects.</p>
+        </div>
+        <div class="feature-card glass-card">
+          <i class="fa-solid fa-triangle-exclamation feature-icon"></i>
+          <h3>Risk Assessment</h3>
+          <p>Understand your risk level — Low, Medium, or High — with detailed reasoning.</p>
+        </div>
+        <div class="feature-card glass-card">
+          <i class="fa-solid fa-wand-magic-sparkles feature-icon"></i>
+          <h3>Skill Gap Detection</h3>
+          <p>Identify missing technical skills that are critical for placement success.</p>
+        </div>
+        <div class="feature-card glass-card">
+          <i class="fa-brands fa-google feature-icon"></i>
+          <h3>Firebase Storage</h3>
+          <p>Every prediction is saved to Firestore in real-time so you can track progress.</p>
+        </div>
+      </div>
     </main>
 
-    <script src="script.js"></script>
+    <script type="module" src="../static/script.js"></script>
   </body>
 </html>

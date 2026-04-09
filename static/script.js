@@ -1,0 +1,452 @@
+import {
+    savePrediction,
+    fetchPredictions,
+    listenPredictions,
+    deletePrediction,
+    clearAllPredictions
+} from "../static/firebase.js";
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const STORAGE_KEY = "futurehirePlacementData";
+
+// ── Local state helpers ───────────────────────────────────────────────────────
+function saveState(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+    catch { return {}; }
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function getRiskColor(risk) {
+    if (risk === "Low")    return "#22c55e";
+    if (risk === "Medium") return "#f59e0b";
+    return "#ef4444";
+}
+function showError(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove("hidden");
+}
+function hideError(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("hidden");
+}
+function formatTimestamp(ts) {
+    if (!ts) return "—";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+// ── AI Logic ──────────────────────────────────────────────────────────────────
+function calcProbability(marks, attendance, skillsCount, projects, backlogs) {
+    const skillsNorm   = Math.min((skillsCount / 10) * 100, 100);
+    const projectsNorm = Math.min((projects    / 5)  * 100, 100);
+    const score = marks * 0.30 + attendance * 0.20 + skillsNorm * 0.20 + projectsNorm * 0.20 - backlogs * 10;
+    return Math.round(Math.max(0, Math.min(100, score)) * 10) / 10;
+}
+
+function getRiskLevel(prob) {
+    if (prob >= 75) return "Low";
+    if (prob >= 50) return "Medium";
+    return "High";
+}
+
+function getMissingSkills(skillsCount) {
+    if (skillsCount < 3) return ["Data Structures", "System Design", "SQL", "Projects"];
+    return [];
+}
+
+function getActionPlan(prob) {
+    if (prob >= 75) return {
+        month_1_2: "Strengthen DSA and system design concepts",
+        month_3_4: "Build 2 advanced projects and contribute to open source",
+        month_5_6: "Mock interviews, resume polish, and apply to top companies"
+    };
+    if (prob >= 50) return {
+        month_1_2: "Focus on DSA fundamentals and fill skill gaps",
+        month_3_4: "Build real-world projects and improve GitHub profile",
+        month_5_6: "Practice mock interviews and apply to mid-tier companies"
+    };
+    return {
+        month_1_2: "Clear backlogs, improve marks, and start DSA from scratch",
+        month_3_4: "Learn SQL, System Design, and complete at least 2 projects",
+        month_5_6: "Mock interviews, aptitude prep, and apply broadly"
+    };
+}
+
+function getExplanation(prob, marks, attendance, backlogs, skillsCount, projects) {
+    const issues = [], strengths = [];
+    if (backlogs > 0)     issues.push(`${backlogs} active backlog(s)`);
+    if (marks < 60)       issues.push("low academic marks");
+    if (skillsCount < 3)  issues.push("insufficient technical skills");
+    if (projects < 2)     issues.push("limited project experience");
+    if (attendance < 75)  issues.push("low attendance");
+    if (marks >= 75)      strengths.push("strong academics");
+    if (projects >= 3)    strengths.push("solid project portfolio");
+    if (attendance >= 85) strengths.push("excellent attendance");
+    if (backlogs === 0)   strengths.push("no backlogs");
+
+    let base = prob >= 75 ? "Excellent placement prospects!"
+             : prob >= 50 ? "Moderate placement chances."
+             : "High risk — immediate improvement needed.";
+    if (issues.length)    base += ` Concerns: ${issues.join(", ")}.`;
+    if (strengths.length) base += ` Strengths: ${strengths.join(", ")}.`;
+    return base;
+}
+
+// ── Dashboard (form) page ─────────────────────────────────────────────────────
+function initDashboardPage() {
+    const form = document.getElementById("predictionForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hideError("formError");
+
+        const name        = document.getElementById("name").value.trim();
+        const marks       = Number(document.getElementById("marks").value);
+        const attendance  = Number(document.getElementById("attendance").value);
+        const backlogs    = Number(document.getElementById("backlogs").value);
+        const projects    = Number(document.getElementById("projects").value);
+        const skillsCount = Number(document.getElementById("skills_count").value);
+        const skillsList  = document.getElementById("skills_list")?.value.trim() || "";
+
+        if (!name)                              { showError("formError", "Please enter your name.");                return; }
+        if (marks < 0 || marks > 100)           { showError("formError", "Marks must be between 0 and 100.");      return; }
+        if (attendance < 0 || attendance > 100) { showError("formError", "Attendance must be between 0 and 100."); return; }
+        if (backlogs < 0)                       { showError("formError", "Backlogs cannot be negative.");          return; }
+        if (projects < 0)                       { showError("formError", "Projects cannot be negative.");          return; }
+        if (skillsCount < 0)                    { showError("formError", "Skills count cannot be negative.");      return; }
+
+        const btn     = document.getElementById("predictBtn");
+        const loader  = document.getElementById("btnLoader");
+        const btnText = btn.querySelector("span");
+        btn.disabled = true;
+        loader.style.display = "inline-block";
+        btnText.textContent  = "Analyzing...";
+
+        try {
+            // Run AI logic locally
+            const prob        = calcProbability(marks, attendance, skillsCount, projects, backlogs);
+            const risk        = getRiskLevel(prob);
+            const missing     = getMissingSkills(skillsCount);
+            const action_plan = getActionPlan(prob);
+            const explanation = getExplanation(prob, marks, attendance, backlogs, skillsCount, projects);
+
+            // Save to Firestore
+            const firestoreId = await savePrediction({
+                name, marks, attendance,
+                skills_count:          skillsCount,
+                projects, backlogs,
+                skills_list:           skillsList,
+                placement_probability: prob,
+                risk_level:            risk,
+                missing_skills:        missing,
+                action_plan,
+                explanation
+            });
+
+            const result = { placement_probability: prob, risk_level: risk, missing_skills: missing, action_plan, explanation };
+
+            saveState({
+                name, marks, attendance, backlogs,
+                projects, skills_count: skillsCount,
+                skills_list: skillsList,
+                firestore_id: firestoreId,
+                apiResult: result
+            });
+
+            window.location.href = "result.html";
+
+        } catch (err) {
+            btn.disabled = false;
+            loader.style.display = "none";
+            btnText.textContent  = "Analyze My Profile";
+            showError("formError", `Error: ${err.message}. Check your Firebase config in firebase.js`);
+        }
+    });
+}
+
+// ── Result page ───────────────────────────────────────────────────────────────
+function initResultPage() {
+    const loadingSection = document.getElementById("loadingSection");
+    const resultsSection = document.getElementById("resultsSection");
+    if (!loadingSection || !resultsSection) return;
+
+    const state = loadState();
+    if (!state?.apiResult) {
+        loadingSection.querySelector("h3").textContent = "No prediction data found.";
+        loadingSection.querySelector("p").textContent  = "Go to Dashboard and submit your profile first.";
+        return;
+    }
+
+    setTimeout(() => {
+        loadingSection.classList.add("hidden");
+        resultsSection.classList.remove("hidden");
+        resultsSection.classList.add("fade-in");
+        renderResult(state);
+    }, 900);
+}
+
+function renderResult(state) {
+    const r           = state.apiResult;
+    const prob        = r.placement_probability;
+    const risk        = r.risk_level;
+    const color       = getRiskColor(risk);
+    const missing     = r.missing_skills || [];
+    const explanation = r.explanation    || "";
+
+    const probEl = document.getElementById("probValue");
+    if (probEl) probEl.textContent = `${prob}%`;
+
+    const bar = document.getElementById("progressBar");
+    if (bar) {
+        bar.style.background = color;
+        requestAnimationFrame(() => { bar.style.width = `${prob}%`; });
+    }
+
+    const statusText = document.getElementById("statusText");
+    if (statusText) { statusText.textContent = `${risk} Risk`; statusText.style.color = color; }
+
+    const statusCard = document.getElementById("statusCard");
+    if (statusCard) statusCard.style.borderTop = `4px solid ${color}`;
+
+    const explEl = document.getElementById("resultExplanation");
+    if (explEl) explEl.textContent = explanation;
+
+    const gapEl = document.getElementById("skillGaps");
+    if (gapEl) {
+        gapEl.innerHTML = missing.length
+            ? missing.map(s => `<span class="gap-tag"><i class="fa-solid fa-circle-xmark" style="color:#ef4444;margin-right:6px;"></i>${s}</span>`).join("")
+            : `<span class="gap-tag" style="color:#22c55e;"><i class="fa-solid fa-circle-check" style="margin-right:6px;"></i>No skill gaps — great profile!</span>`;
+    }
+
+    const savedBadge = document.getElementById("savedBadge");
+    if (savedBadge && state.firestore_id) {
+        savedBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Saved to Firebase (ID: ${state.firestore_id.slice(0, 8)}…)`;
+        savedBadge.classList.remove("hidden");
+    }
+}
+
+// ── Analysis page ─────────────────────────────────────────────────────────────
+function initAnalysisPage() {
+    if (!document.getElementById("bar-marks")) return;
+
+    const state = loadState();
+    if (!state?.apiResult) return;
+
+    const marks       = Number(state.marks        || 0);
+    const attendance  = Number(state.attendance   || 0);
+    const skillsCount = Number(state.skills_count || 0);
+    const projects    = Number(state.projects     || 0);
+    const backlogs    = Number(state.backlogs     || 0);
+    const missing     = state.apiResult.missing_skills || [];
+
+    const skillsScore   = Math.min(100, skillsCount * 10);
+    const projectsScore = Math.min(100, projects    * 20);
+    const backlogRisk   = Math.min(100, backlogs    * 25);
+
+    const barMap = {
+        "bar-marks": marks, "bar-skills": skillsScore,
+        "bar-projects": projectsScore, "bar-attendance": attendance, "bar-backlogs": backlogRisk
+    };
+    const scoreMap = {
+        "score-marks": `${marks}%`, "score-skills": `${skillsScore}%`,
+        "score-projects": `${projectsScore}%`, "score-attendance": `${attendance}%`, "score-backlogs": `${backlogRisk}%`
+    };
+
+    Object.entries(barMap).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) requestAnimationFrame(() => { el.style.width = `${val}%`; });
+    });
+    Object.entries(scoreMap).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    });
+
+    const header = document.getElementById("analysisHeader");
+    if (header && state.name) header.textContent = `Hi ${state.name}, here is your profile breakdown.`;
+
+    const gapEl = document.getElementById("skillGaps");
+    if (gapEl) {
+        gapEl.innerHTML = missing.length
+            ? missing.map(s => `<span class="gap-tag"><i class="fa-solid fa-circle-xmark" style="color:#ef4444;margin-right:6px;"></i>${s}</span>`).join("")
+            : `<span class="gap-tag" style="color:#22c55e;"><i class="fa-solid fa-circle-check" style="margin-right:6px;"></i>No skill gaps detected!</span>`;
+    }
+}
+
+// ── Action Plan page ──────────────────────────────────────────────────────────
+function initActionPlanPage() {
+    const planCards = document.getElementById("planCards");
+    if (!planCards) return;
+
+    const state = loadState();
+    if (!state?.apiResult) {
+        planCards.innerHTML = `<p style="color:var(--muted);text-align:center;grid-column:1/-1;">No data found. Please complete a prediction first.</p>`;
+        return;
+    }
+
+    const plan = state.apiResult.action_plan || {};
+    const phases = [
+        { key: "month_1_2", label: "Month 1–2", icon: "fa-seedling", color: "#7c3aed" },
+        { key: "month_3_4", label: "Month 3–4", icon: "fa-code",     color: "#38bdf8" },
+        { key: "month_5_6", label: "Month 5–6", icon: "fa-trophy",   color: "#f472b6" }
+    ];
+
+    planCards.innerHTML = phases.map(({ key, label, icon, color }) => `
+        <div class="timeline-item">
+            <div class="timeline-content glass-card" style="border-top:3px solid ${color};">
+                <span class="month" style="color:${color};">
+                    <i class="fa-solid ${icon}"></i> ${label}
+                </span>
+                <h4>${plan[key] || "No tasks defined."}</h4>
+            </div>
+        </div>
+    `).join("");
+}
+
+// ── History page (real-time Firestore listener) ───────────────────────────────
+function initHistoryPage() {
+    const container = document.getElementById("historyContainer");
+    const countEl   = document.getElementById("historyCount");
+    const clearBtn  = document.getElementById("clearAllBtn");
+    if (!container) return;
+
+    container.innerHTML = `<div class="history-loading"><div class="loading-spinner"></div><p>Connecting to Firebase...</p></div>`;
+
+    // Real-time listener
+    const unsubscribe = listenPredictions((records) => {
+        if (countEl) countEl.textContent = `${records.length} record${records.length !== 1 ? "s" : ""}`;
+
+        if (!records.length) {
+            container.innerHTML = `
+                <div class="history-empty glass-card">
+                    <i class="fa-solid fa-database" style="font-size:2.5rem;color:var(--muted);margin-bottom:16px;"></i>
+                    <p>No predictions saved yet.</p>
+                    <a href="dashboard.html" class="secondary-btn" style="margin-top:16px;">
+                        <i class="fa-solid fa-plus"></i> Make a Prediction
+                    </a>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = records.map(r => `
+            <div class="history-card glass-card" id="record-${r.id}">
+                <div class="history-card-header">
+                    <div class="history-name">
+                        <i class="fa-solid fa-user-circle"></i>
+                        <span>${r.name || "Anonymous"}</span>
+                    </div>
+                    <div class="history-meta">
+                        <span class="history-date">
+                            <i class="fa-regular fa-clock"></i> ${formatTimestamp(r.timestamp)}
+                        </span>
+                        <button class="delete-btn" data-id="${r.id}" title="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-stats">
+                    <div class="history-prob" style="color:${getRiskColor(r.risk_level)};">
+                        ${r.placement_probability}%
+                    </div>
+                    <span class="risk-badge" style="background:${getRiskColor(r.risk_level)}20;color:${getRiskColor(r.risk_level)};border:1px solid ${getRiskColor(r.risk_level)}40;">
+                        ${r.risk_level} Risk
+                    </span>
+                </div>
+
+                <div class="history-inputs">
+                    <span><i class="fa-solid fa-graduation-cap"></i> Marks: <b>${r.marks}%</b></span>
+                    <span><i class="fa-solid fa-calendar-check"></i> Attendance: <b>${r.attendance}%</b></span>
+                    <span><i class="fa-solid fa-code"></i> Skills: <b>${r.skills_count}</b></span>
+                    <span><i class="fa-solid fa-folder-open"></i> Projects: <b>${r.projects}</b></span>
+                    <span><i class="fa-solid fa-circle-exclamation"></i> Backlogs: <b>${r.backlogs}</b></span>
+                </div>
+
+                ${r.missing_skills?.length ? `
+                <div class="history-gaps">
+                    <span class="gap-label">Missing Skills:</span>
+                    ${r.missing_skills.map(s => `<span class="gap-tag">${s}</span>`).join("")}
+                </div>` : ""}
+
+                <p class="history-explanation">${r.explanation || ""}</p>
+            </div>
+        `).join("");
+
+        // Attach delete handlers
+        container.querySelectorAll(".delete-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const id = btn.dataset.id;
+                if (!confirm("Delete this record?")) return;
+                btn.disabled = true;
+                await deletePrediction(id);
+                // listener auto-refreshes UI
+            });
+        });
+    });
+
+    // Clear all
+    if (clearBtn) {
+        clearBtn.addEventListener("click", async () => {
+            if (!confirm("Delete ALL prediction records? This cannot be undone.")) return;
+            clearBtn.disabled = true;
+            await clearAllPredictions();
+            clearBtn.disabled = false;
+        });
+    }
+
+    // Cleanup listener on page unload
+    window.addEventListener("beforeunload", unsubscribe);
+}
+
+// ── Dashboard analytics page ──────────────────────────────────────────────────
+async function initAnalyticsDashboard() {
+    const totalEl  = document.getElementById("totalPredictions");
+    const avgEl    = document.getElementById("avgProbability");
+    const highEl   = document.getElementById("highRiskCount");
+    const recentEl = document.getElementById("recentList");
+    if (!totalEl) return;
+
+    try {
+        const records = await fetchPredictions();
+
+        totalEl.textContent = records.length;
+
+        if (records.length) {
+            const avg = records.reduce((s, r) => s + r.placement_probability, 0) / records.length;
+            avgEl.textContent  = `${avg.toFixed(1)}%`;
+            highEl.textContent = records.filter(r => r.risk_level === "High").length;
+
+            if (recentEl) {
+                recentEl.innerHTML = records.slice(0, 5).map(r => `
+                    <div class="recent-item">
+                        <span class="recent-name">${r.name || "Anonymous"}</span>
+                        <span class="recent-prob" style="color:${getRiskColor(r.risk_level)};">${r.placement_probability}%</span>
+                        <span class="recent-risk risk-badge" style="background:${getRiskColor(r.risk_level)}20;color:${getRiskColor(r.risk_level)};border:1px solid ${getRiskColor(r.risk_level)}40;">${r.risk_level}</span>
+                    </div>
+                `).join("");
+            }
+        } else {
+            avgEl.textContent  = "—";
+            highEl.textContent = "0";
+            if (recentEl) recentEl.innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px;">No data yet.</p>`;
+        }
+    } catch (err) {
+        if (totalEl) totalEl.textContent = "—";
+        console.error("Analytics error:", err);
+    }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+    initDashboardPage();
+    initResultPage();
+    initAnalysisPage();
+    initActionPlanPage();
+    initHistoryPage();
+    initAnalyticsDashboard();
+});
