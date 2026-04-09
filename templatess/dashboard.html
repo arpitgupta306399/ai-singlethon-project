@@ -3,20 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | AI Placement Predictor</title>
+    <title>Dashboard | FutureHire AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../static/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
     <nav class="nav-bar">
       <div class="nav-container">
-        <a href="index.html" class="nav-logo">FutureHire AI</a>
+        <a href="index.html" class="nav-logo"><i class="fa-solid fa-brain"></i> FutureHire</a>
         <div class="nav-links">
           <a href="index.html">Home</a>
           <a href="dashboard.html" class="active">Dashboard</a>
-          <a href="result.html">Results</a>
-          <a href="analysis.html">Analysis</a>
-          <a href="action-plan.html">Action Plan</a>
           <a href="history.html">History</a>
           <a href="analytics.html">Analytics</a>
         </div>
@@ -29,54 +29,101 @@
     </div>
 
     <main class="container">
-      <header class="hero">
+      <header class="hero" style="padding-bottom:16px;">
         <h1 class="gradient-text">Profile Dashboard</h1>
-        <p>Enter your academic and skill details to get AI-powered placement predictions.</p>
+        <p>Fill in your academic details and let AI predict your placement probability.</p>
       </header>
 
       <section class="glass-card form-container">
+        <div class="form-toolbar">
+          <span class="form-step-label"><i class="fa-solid fa-user-pen"></i> Your Academic Profile</span>
+          <!-- Single voice button — only one ID -->
+          <button type="button" id="voiceBtn" class="voice-btn">
+            🎤 Voice Input
+          </button>
+        </div>
+
+        <!-- Voice status bar -->
+        <div id="voiceStatus" class="voice-status hidden">
+          <span class="voice-dot"></span>
+          <span id="voiceStatusText">Listening… speak now</span>
+        </div>
+
         <form id="predictionForm" novalidate>
           <div class="form-grid">
-            <div class="input-group">
-              <label><i class="fa-solid fa-user"></i> Full Name</label>
-              <input type="text" id="name" placeholder="John Doe" required />
+
+            <div class="float-group">
+              <input type="text" id="name" placeholder=" " required autocomplete="off" />
+              <label for="name"><i class="fa-solid fa-user"></i> Full Name</label>
             </div>
-            <div class="input-group">
-              <label><i class="fa-solid fa-graduation-cap"></i> Marks (%)</label>
-              <input type="number" id="marks" placeholder="85" min="0" max="100" required />
+
+            <div class="float-group">
+              <input type="number" id="marks" placeholder=" " min="0" max="100" required />
+              <label for="marks"><i class="fa-solid fa-graduation-cap"></i> Marks (%)</label>
             </div>
-            <div class="input-group">
-              <label><i class="fa-solid fa-calendar-check"></i> Attendance (%)</label>
-              <input type="number" id="attendance" placeholder="90" min="0" max="100" required />
+
+            <div class="float-group">
+              <input type="number" id="attendance" placeholder=" " min="0" max="100" required />
+              <label for="attendance"><i class="fa-solid fa-calendar-check"></i> Attendance (%)</label>
             </div>
-            <div class="input-group">
-              <label><i class="fa-solid fa-circle-exclamation"></i> Active Backlogs</label>
-              <input type="number" id="backlogs" placeholder="0" min="0" required />
+
+            <div class="float-group">
+              <input type="number" id="backlogs" placeholder=" " min="0" required />
+              <label for="backlogs"><i class="fa-solid fa-circle-exclamation"></i> Active Backlogs</label>
             </div>
-            <div class="input-group">
-              <label><i class="fa-solid fa-folder-open"></i> Number of Projects</label>
-              <input type="number" id="projects" placeholder="2" min="0" required />
+
+            <div class="float-group">
+              <input type="number" id="projects" placeholder=" " min="0" required />
+              <label for="projects"><i class="fa-solid fa-folder-open"></i> Number of Projects</label>
             </div>
-            <div class="input-group">
-              <label><i class="fa-solid fa-code"></i> Number of Skills</label>
-              <input type="number" id="skills_count" placeholder="5" min="0" required />
+
+            <div class="float-group">
+              <input type="number" id="skills_count" placeholder=" " min="0" required />
+              <label for="skills_count"><i class="fa-solid fa-code"></i> Number of Skills</label>
             </div>
+
           </div>
 
-          <div class="input-group full-width" style="margin-bottom: 24px;">
-            <label><i class="fa-solid fa-tags"></i> Skills List (comma-separated)</label>
-            <input type="text" id="skills_list" placeholder="Python, React, SQL, DSA, AWS" />
+          <div class="float-group full-width" style="margin-bottom:24px;">
+            <input type="text" id="skills_list" placeholder=" " autocomplete="off" />
+            <label for="skills_list"><i class="fa-solid fa-tags"></i> Skills List (comma-separated)</label>
           </div>
 
           <div id="formError" class="form-error hidden"></div>
 
           <button type="submit" id="predictBtn" class="primary-btn">
-            <span>Analyze My Profile</span>
+            <span id="btnText">Analyze My Profile</span>
             <div class="loader" id="btnLoader"></div>
           </button>
         </form>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <span class="nav-logo" style="font-size:1rem;"><i class="fa-solid fa-brain"></i> FutureHire</span>
+        <span class="footer-copy">© 2025 FutureHire AI.</span>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="history.html">History</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Chatbot -->
+    <div id="chatbotFab">💬</div>
+
+    <div id="chatbotBox">
+      <div id="chatbotHeader">
+        <span>🤖 FutureHire Assistant</span>
+        <button id="chatbotClose">✕</button>
+      </div>
+      <div id="chatMessages"></div>
+      <div id="chatInputRow">
+        <input id="chatInput" placeholder="Ask something..." autocomplete="off" />
+        <button id="chatSend">Send</button>
+      </div>
+    </div>
 
     <script type="module" src="../static/script.js"></script>
   </body>

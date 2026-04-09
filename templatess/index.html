@@ -4,19 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Placement Predictor | FutureHire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../static/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
     <nav class="nav-bar">
       <div class="nav-container">
-        <a href="index.html" class="nav-logo">FutureHire AI</a>
+        <a href="index.html" class="nav-logo">
+          <i class="fa-solid fa-brain"></i> FutureHire
+        </a>
         <div class="nav-links">
           <a href="index.html" class="active">Home</a>
           <a href="dashboard.html">Dashboard</a>
-          <a href="result.html">Results</a>
-          <a href="analysis.html">Analysis</a>
-          <a href="action-plan.html">Action Plan</a>
           <a href="history.html">History</a>
           <a href="analytics.html">Analytics</a>
         </div>
@@ -30,46 +32,77 @@
 
     <main class="container">
       <header class="hero">
-        <h1 class="gradient-text">AI Placement Predictor</h1>
-        <p>
-          Leverage AI-powered insights to forecast your placement probability,
-          identify skill gaps, and get a personalized 6-month action plan.
-        </p>
-        <div class="hero-stats">
-          <div class="stat-pill"><i class="fa-solid fa-brain"></i> AI-Powered</div>
-          <div class="stat-pill"><i class="fa-solid fa-chart-line"></i> Real-time Analysis</div>
-          <div class="stat-pill"><i class="fa-solid fa-road"></i> Action Plan</div>
-          <div class="stat-pill"><i class="fa-brands fa-google"></i> Firebase Backed</div>
+        <div class="hero-badge"><i class="fa-solid fa-sparkles"></i> AI-Powered · Real-time</div>
+        <h1 class="gradient-text">Know Your Placement<br>Odds Before Anyone Else</h1>
+        <p>Enter your academic profile and get an instant AI-powered probability score, skill gap report, and a 6-month action plan — all in seconds.</p>
+        <div class="hero-actions">
+          <a href="dashboard.html" class="animated-btn">
+            <span>Start Prediction</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+          <a href="history.html" class="ghost-btn">
+            <i class="fa-solid fa-clock-rotate-left"></i> View History
+          </a>
         </div>
-        <a href="dashboard.html" class="animated-btn">
-          <span>Start Prediction</span>
-          <i class="fa-solid fa-arrow-right"></i>
-        </a>
       </header>
 
       <div class="features-grid">
         <div class="feature-card glass-card">
-          <i class="fa-solid fa-percent feature-icon"></i>
+          <div class="feature-icon-wrap"><i class="fa-solid fa-percent"></i></div>
           <h3>Placement Probability</h3>
-          <p>Get an accurate percentage score based on your marks, attendance, skills, and projects.</p>
+          <p>Accurate percentage score based on marks, attendance, skills, and projects.</p>
         </div>
         <div class="feature-card glass-card">
-          <i class="fa-solid fa-triangle-exclamation feature-icon"></i>
+          <div class="feature-icon-wrap"><i class="fa-solid fa-shield-halved"></i></div>
           <h3>Risk Assessment</h3>
-          <p>Understand your risk level — Low, Medium, or High — with detailed reasoning.</p>
+          <p>Understand your risk level — Low, Medium, or High — with clear reasoning.</p>
         </div>
         <div class="feature-card glass-card">
-          <i class="fa-solid fa-wand-magic-sparkles feature-icon"></i>
+          <div class="feature-icon-wrap"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
           <h3>Skill Gap Detection</h3>
-          <p>Identify missing technical skills that are critical for placement success.</p>
+          <p>Identify missing technical skills critical for placement success.</p>
         </div>
         <div class="feature-card glass-card">
-          <i class="fa-brands fa-google feature-icon"></i>
-          <h3>Firebase Storage</h3>
-          <p>Every prediction is saved to Firestore in real-time so you can track progress.</p>
+          <div class="feature-icon-wrap"><i class="fa-solid fa-road"></i></div>
+          <h3>6-Month Action Plan</h3>
+          <p>Personalized roadmap to close gaps and land your dream job.</p>
         </div>
       </div>
     </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <span class="nav-logo" style="font-size:1rem;"><i class="fa-solid fa-brain"></i> FutureHire</span>
+        <span class="footer-copy">© 2025 FutureHire AI. Built for students, by developers.</span>
+        <div class="footer-links">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="history.html">History</a>
+          <a href="analytics.html">Analytics</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Chatbot -->
+    <div class="chatbot-widget" id="chatbotWidget">
+      <div class="chatbot-header" id="chatbotToggle">
+        <span><i class="fa-solid fa-robot"></i> Ask FutureHire</span>
+        <i class="fa-solid fa-chevron-down" id="chatChevron"></i>
+      </div>
+      <div class="chatbot-body" id="chatbotBody">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg bot">👋 Hi! Ask me anything about placement prep.</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" placeholder="Type a question…" autocomplete="off" />
+          <button id="chatSend"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+        <div class="chat-suggestions">
+          <button class="chip" data-q="How to improve placement?">Improve placement</button>
+          <button class="chip" data-q="Best skills?">Best skills</button>
+          <button class="chip" data-q="How many projects needed?">Projects needed</button>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="../static/script.js"></script>
   </body>
